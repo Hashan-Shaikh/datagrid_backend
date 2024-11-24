@@ -16,6 +16,27 @@ exports.getAllData = async (req, res) => {
     }
 };
 
+exports.getDataById = async (req, res) => {
+    try {
+        const id = req.query._id; // Extract the '_id' from the URL
+        console.log(id);
+        const { DynamicModel, headers } = await generateSchema(); // Generate schema dynamically
+
+        // Find the record by '_id'
+        const record = await DynamicModel.findById(id);
+
+        if (!record) {
+            // If the record is not found, return a 404 status
+            return res.status(404).json({ message: "Record not found" });
+        }
+
+
+        res.status(200).json(record);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 exports.searchData = async (req, res) => {
     const searchTerm = req.query.searchTerm || '';
     try {

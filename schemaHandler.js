@@ -16,7 +16,6 @@ const generateSchema = async () => {
     if (fs.existsSync(dumpFilePath)) {
 
         const schemaFields = JSON.parse(fs.readFileSync(dumpFilePath, 'utf8'));
-        console.log(schemaFields)
         const schema = new mongoose.Schema(schemaFields);
 
         if(!mongoose.models.dynamicData){
