@@ -37,6 +37,28 @@ exports.getDataById = async (req, res) => {
     }
 };
 
+exports.deleteDataById = async (req, res) => {
+    try {
+        const id = req.query._id; // Extract the '_id' from the URL
+        console.log(`Deleting record with ID: ${id}`);
+        
+        const { DynamicModel } = await generateSchema(); // Generate schema dynamically
+
+        // Find the record by '_id' and delete it
+        const record = await DynamicModel.findByIdAndDelete(id);
+
+        if (!record) {
+            // If the record is not found, return a 404 status
+            return res.status(404).json({ message: "Record not found" });
+        }
+
+        res.status(200).json({ message: "Record deleted successfully", record });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
 exports.searchData = async (req, res) => {
     const searchTerm = req.query.searchTerm || '';
     try {

@@ -6,5 +6,6 @@ const dynamicController = require('../controllers/dynamicController');
 router.get('/', dynamicController.getAllData);
 router.get('/search', dynamicController.searchData);
 router.get('/view', dynamicController.getDataById);
+router.delete('/delete', dynamicController.deleteDataById);
 
 module.exports = router;
