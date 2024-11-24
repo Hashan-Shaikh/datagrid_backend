@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const express = require('express');
-const carRoute = require('./routes/carRoute');
+const dynamicRoute = require('./routes/dynamicRoute');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
@@ -51,7 +51,7 @@ const app = express();
 app.use(express.json());
 app.use(cors({ credentials: true, origin: "http://localhost:3001" }));
 
-app.use('/cars', carRoute);
+app.use('/dynamic', dynamicRoute);
 
 const PORT = 3000;
 app.listen(PORT, () => {
