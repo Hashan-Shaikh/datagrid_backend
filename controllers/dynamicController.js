@@ -58,6 +58,63 @@ exports.deleteDataById = async (req, res) => {
     }
 };
 
+exports.filterDataByParams = async (req, res) => {
+    try {
+        // Destructure the query parameters
+        const { column, operation, value } = req.query;
+
+        // Validate input
+        if (!column || !operation || value === undefined) {
+            return res.status(400).json({ message: 'Missing required parameters' });
+        }
+
+        // Get the dynamic model and headers
+        const { DynamicModel, headers } = await generateSchema();
+
+        // Check if the column exists in headers
+        if (!headers.includes(column)) {
+            return res.status(400).json({ message: 'Invalid column name' });
+        }
+
+        // Prepare the query object based on the operation
+        let query = {};
+
+        switch (operation) {
+            case 'contains':
+                query[column] = { $regex: value, $options: 'i' };  // Case-insensitive regex match
+                break;
+
+            case 'equals':
+                query[column] = value;  // Exact match
+                break;
+
+            case 'starts with':
+                query[column] = { $regex: `^${value}`, $options: 'i' };  // Match values that start with the given value
+                break;
+
+            case 'ends with':
+                query[column] = { $regex: `${value}$`, $options: 'i' };  // Match values that end with the given value
+                break;
+
+            case 'is empty':
+                query[column] = { $in: [null, ''] };  // Match values that are empty or null
+                break;
+
+            default:
+                return res.status(400).json({ message: 'Invalid operation' });
+        }
+
+        // Perform the query on the DynamicModel
+        const data = await DynamicModel.find(query);
+
+        // Return the filtered data
+        res.status(200).json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
 
 exports.searchData = async (req, res) => {
     const searchTerm = req.query.searchTerm || '';

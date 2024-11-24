@@ -7,5 +7,6 @@ router.get('/', dynamicController.getAllData);
 router.get('/search', dynamicController.searchData);
 router.get('/view', dynamicController.getDataById);
 router.delete('/delete', dynamicController.deleteDataById);
+router.get('/filter', dynamicController.filterDataByParams);
 
 module.exports = router;
