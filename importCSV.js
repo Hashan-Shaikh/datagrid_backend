@@ -66,7 +66,4 @@ const importData = async () => {
     });
 };
 
-// importData()
-//     .then(() => console.log('Import completed successfully.'))
-//     .catch((err) => console.error('Error during import:', err));
 module.exports = {importData};
