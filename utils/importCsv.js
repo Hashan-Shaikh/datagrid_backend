@@ -2,6 +2,8 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const cleanData = require('./cleanData');
+const createSchemaFromHeaders = require('./createSchemaFromHeaders');
 
 dotenv.config();
 
@@ -11,23 +13,6 @@ if (!csvFilePath) {
     console.error('Error: CSV_FILE_PATH is not defined in the environment variables.');
     process.exit(1);
 }
-
-
-const cleanRow = (row) => {
-    for (const key in row) {
-        const value = row[key];
-        row[key] = value === '-' ? null : value.trim().replace(/\s+/g, ' ');
-    }
-    return row;
-};
-
-const createSchemaFromCsv = (headers) => {
-    const schemaFields = {};
-    headers.forEach((field) => {
-        schemaFields[field] = { type: mongoose.Schema.Types.Mixed };
-    });
-    return { schemaFields, schema: new mongoose.Schema(schemaFields) };
-};
 
 const importData = async () => {
 
@@ -41,7 +26,7 @@ const importData = async () => {
                 headers = csvHeaders;
             })
             .on('data', (row) => {
-                results.push(cleanRow(row));
+                results.push(cleanData(row));
             })
             .on('end', async () => {
                 if (headers.length === 0) {
@@ -49,7 +34,7 @@ const importData = async () => {
                     return;
                 }
 
-                const { schemaFields, schema } = createSchemaFromCsv(headers);
+                const { schemaFields, schema } = createSchemaFromHeaders(headers);
                 const DynamicModel = mongoose.model('dynamicData', schema);
 
                 try {

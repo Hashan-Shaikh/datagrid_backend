@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { importData } = require('../importCsv');
+const { importData } = require('./importCsv');
 
 //fetch dump file name from environment
 const DUMP_FILE_NAME = process.env.DUMP_FILE;
