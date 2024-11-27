@@ -12,6 +12,8 @@ const dumpFilePath = `./${DUMP_FILE_NAME}`;
 let DynamicModel = null;
 let headers = [];
 
+//this function sole purpose is to serve the service with the model to perform db operations
+//this function sees that if dump file exists read the schema fields from it and check if mongoose model is not already created make it and return dynamic model and list of headers = [every_column_name]
 const generateSchema = async () => {
     if (fs.existsSync(dumpFilePath)) {
 
@@ -24,7 +26,6 @@ const generateSchema = async () => {
             DynamicModel = mongoose.models.dynamicData;
         }
     
-        //DynamicModel = mongoose.model('dynamicData', schema);
         headers = Object.keys(schemaFields);
     
         console.log('Schema and headers loaded from dump file.');

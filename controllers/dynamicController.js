@@ -1,35 +1,25 @@
-const {generateSchema} = require('../schemaHandler');
-const fs = require('fs');
-const mongoose = require('mongoose');
+const dynamicService = require('../services/dynamicService');
 
-exports.getAllData = async (req, res) => {
+
+//call the fetch all data service to fetch all the records to display in a grid
+const getAllData = async (req, res) => {
     try {
-        const {DynamicModel, headers} = await generateSchema();
-        const data = await DynamicModel.find();
-        const table = {
-            headers,
-            data,
-        }
+        const table = await dynamicService.fetchAllData();
         res.status(200).json(table);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-exports.getDataById = async (req, res) => {
+//fetches id from the url query and returns the record of that id
+const getDataById = async (req, res) => {
     try {
-        const id = req.query._id; // Extract the '_id' from the URL
-        console.log(id);
-        const { DynamicModel, headers } = await generateSchema(); // Generate schema dynamically
-
-        // Find the record by '_id'
-        const record = await DynamicModel.findById(id);
+        const id = req.query._id;
+        const record = await dynamicService.fetchDataById(id);
 
         if (!record) {
-            // If the record is not found, return a 404 status
-            return res.status(404).json({ message: "Record not found" });
+            return res.status(404).json({ message: 'Record not found' });
         }
-
 
         res.status(200).json(record);
     } catch (err) {
@@ -37,104 +27,55 @@ exports.getDataById = async (req, res) => {
     }
 };
 
-exports.deleteDataById = async (req, res) => {
+//extract the id from query parameter and call delete service for deleting a record
+const deleteDataById = async (req, res) => {
     try {
-        const id = req.query._id; // Extract the '_id' from the URL
-        console.log(`Deleting record with ID: ${id}`);
-        
-        const { DynamicModel } = await generateSchema(); // Generate schema dynamically
-
-        // Find the record by '_id' and delete it
-        const record = await DynamicModel.findByIdAndDelete(id);
+        const id = req.query._id;
+        const record = await dynamicService.deleteDataById(id);
 
         if (!record) {
-            // If the record is not found, return a 404 status
-            return res.status(404).json({ message: "Record not found" });
+            return res.status(404).json({ message: 'Record not found' });
         }
 
-        res.status(200).json({ message: "Record deleted successfully", record });
+        res.status(200).json({ message: 'Record deleted successfully', record });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-exports.filterDataByParams = async (req, res) => {
+//column: the actual name of column
+//operation: starts with, ends with, contains, equals..
+//value: with which val the operation should be performed? eg. starts with "bm"
+const filterDataByParams = async (req, res) => {
     try {
-        // Destructure the query parameters
         const { column, operation, value } = req.query;
 
-        // Validate input
         if (!column || !operation || value === undefined) {
             return res.status(400).json({ message: 'Missing required parameters' });
         }
 
-        // Get the dynamic model and headers
-        const { DynamicModel, headers } = await generateSchema();
-
-        // Check if the column exists in headers
-        if (!headers.includes(column)) {
-            return res.status(400).json({ message: 'Invalid column name' });
-        }
-
-        // Prepare the query object based on the operation
-        let query = {};
-
-        switch (operation) {
-            case 'contains':
-                query[column] = { $regex: value, $options: 'i' };  // Case-insensitive regex match
-                break;
-
-            case 'equals':
-                query[column] = value;  // Exact match
-                break;
-
-            case 'starts with':
-                query[column] = { $regex: `^${value}`, $options: 'i' };  // Match values that start with the given value
-                break;
-
-            case 'ends with':
-                query[column] = { $regex: `${value}$`, $options: 'i' };  // Match values that end with the given value
-                break;
-
-            case 'is empty':
-                query[column] = { $in: [null, ''] };  // Match values that are empty or null
-                break;
-
-            default:
-                return res.status(400).json({ message: 'Invalid operation' });
-        }
-
-        // Perform the query on the DynamicModel
-        const data = await DynamicModel.find(query);
-
-        // Return the filtered data
+        const data = await dynamicService.filterData(column, operation, value);
         res.status(200).json(data);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-
-
-exports.searchData = async (req, res) => {
-    const searchTerm = req.query.searchTerm || '';
+//extract the search term from url query parameter and call the service handling db operations to get all records based on search
+const searchData = async (req, res) => {
     try {
-
-        const {DynamicModel, headers} = await generateSchema();
-        
-         // Dynamically create the $or array
-         const searchConditions = headers.map(header => ({
-            [header]: { $regex: searchTerm, $options: 'i' }
-        }));
-
-        const data = await DynamicModel.find({
-            $or: searchConditions
-        });
-
-        console.log(data);
-
+        const searchTerm = req.query.searchTerm || '';
+        const data = await dynamicService.searchData(searchTerm);
         res.status(200).json(data);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+};
+
+module.exports = {
+    getAllData,
+    getDataById,
+    deleteDataById,
+    filterDataByParams,
+    searchData,
 };
