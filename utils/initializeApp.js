@@ -1,17 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 const { importData } = require('./importCsv');
+const validateSchemasWithHash = require('./hash');
 
-//fetch dump file name from environment
-const DUMP_FILE_NAME = process.env.DUMP_FILE;
-
-// function checks if dump file not exists it calls importData function:
-//     - which do data pre-processing 
-//     - migrate all the data to db
-//     - generate a dump file so that next time db state is known
+// function tasks:
+// - look for dump file
+// - call hash function to calculate hash of dumpfile and newly uploaded csv file
+// - if hashes are same and dumpfile is found skip dbMigration
+// - else call importData function
 const initializeApp = async () => {
-    const dumpFilePath = path.join(__dirname, '..', DUMP_FILE_NAME);
-    if (fs.existsSync(dumpFilePath)) {
+    const dumpFilePath = path.join(__dirname, '..', process.env.DUMP_FILE);
+    const matcher = await validateSchemasWithHash()
+    if (matcher && fs.existsSync(dumpFilePath)) {
         console.log('Dump file exists. Skipping import.');
     } else {
         console.log('Dump file does not exist. Running importCsv...');
