@@ -24,7 +24,7 @@ connectDB().then(async () => {
 app.use('/', routes);
 
 // Start the server
-const PORT = process.env.BACKEND_PORT || 3000;
+const PORT = process.env.BACKEND_PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
