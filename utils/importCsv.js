@@ -1,20 +1,32 @@
 const fs = require('fs');
 const csv = require('csv-parser');
 const mongoose = require('mongoose');
+const path = require('path');
 const dotenv = require('dotenv');
 const cleanData = require('./cleanData');
 const createSchemaFromHeaders = require('./createSchemaFromHeaders');
+const dropDatabaseByName = require('./dropDB');
 
 dotenv.config();
 
-const csvFilePath = process.env.CSV_FILE_PATH;
+const csvFilePath = path.join(__dirname, '..', 'data', process.env.CSV_FILE);
 
 if (!csvFilePath) {
     console.error('Error: CSV_FILE_PATH is not defined in the environment variables.');
     process.exit(1);
 }
 
+// - delete old mongoose model and db if exist
+// - call data clean method to clean the data 
+// - migrate all the data to db
+// - generate a dump file so that next time db state is known
 const importData = async () => {
+
+    if(mongoose.models.dynamicData){
+        delete mongoose.models['dynamicData'];
+        await dropDatabaseByName('csvdata');
+        console.log('old mongoose model deleted..');
+    }
 
     const results = [];
     let headers = [];
