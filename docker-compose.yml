@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ./datagrid_frontend
+    ports:
+      - "3000:80" 
+    restart: always
+
+  backend:
+    build:
+      context: ./datagrid_backend
+    ports:
+      - "3001:3001" 
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/csvdata
+    depends_on:
+      - mongo
+    restart: always
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017" 
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+volumes:
+  mongo-data:
